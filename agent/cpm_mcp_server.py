@@ -4,7 +4,9 @@ for calculating Critical Path Method (CPM) metrics.
 """
 
 import math
+# pyrefly: ignore [missing-import]
 from mcp.server.fastmcp import FastMCP
+# pyrefly: ignore [missing-import]
 from pydantic import BaseModel, Field
 
 # Create the MCP Server

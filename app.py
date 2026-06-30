@@ -43,7 +43,7 @@ if "chat_history" not in st.session_state:
 async def run_mcp_cpm(tasks_data):
     """Spins up the MCP server, calls compute_cpm, and returns the parsed result."""
     server_params = StdioServerParameters(
-        command="python",
+        command=sys.executable,
         args=["agent/cpm_mcp_server.py"],
         env=os.environ.copy()
     )
