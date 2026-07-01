@@ -1661,6 +1661,922 @@
         },
         "std_dev": 0.0
       }
+    },
+    {
+      "version_id": "v7_483108",
+      "timestamp": "2026-06-30T21:24:51.196497",
+      "tasks": {
+        "detected_type": "AON",
+        "tasks": [
+          {
+            "name": "A",
+            "optimistic": 2,
+            "likely": 2,
+            "pessimistic": 2,
+            "depends_on": [],
+            "crash_duration": 1,
+            "normal_cost": 180000,
+            "crash_cost": 280000
+          },
+          {
+            "name": "B",
+            "optimistic": 4,
+            "likely": 4,
+            "pessimistic": 4,
+            "depends_on": [
+              "A"
+            ],
+            "crash_duration": 2,
+            "normal_cost": 320000,
+            "crash_cost": 420000
+          },
+          {
+            "name": "C",
+            "optimistic": 10,
+            "likely": 10,
+            "pessimistic": 10,
+            "depends_on": [
+              "B"
+            ],
+            "crash_duration": 7,
+            "normal_cost": 620000,
+            "crash_cost": 860000
+          },
+          {
+            "name": "D",
+            "optimistic": 6,
+            "likely": 6,
+            "pessimistic": 6,
+            "depends_on": [
+              "C"
+            ],
+            "crash_duration": 4,
+            "normal_cost": 260000,
+            "crash_cost": 340000
+          },
+          {
+            "name": "E",
+            "optimistic": 4,
+            "likely": 4,
+            "pessimistic": 4,
+            "depends_on": [
+              "C"
+            ],
+            "crash_duration": 3,
+            "normal_cost": 410000,
+            "crash_cost": 570000
+          },
+          {
+            "name": "I",
+            "optimistic": 7,
+            "likely": 7,
+            "pessimistic": 7,
+            "depends_on": [
+              "C"
+            ],
+            "crash_duration": 5,
+            "normal_cost": 210000,
+            "crash_cost": 270000
+          },
+          {
+            "name": "G",
+            "optimistic": 7,
+            "likely": 7,
+            "pessimistic": 7,
+            "depends_on": [
+              "D"
+            ],
+            "crash_duration": 4,
+            "normal_cost": 900000,
+            "crash_cost": 1020000
+          },
+          {
+            "name": "F",
+            "optimistic": 5,
+            "likely": 5,
+            "pessimistic": 5,
+            "depends_on": [
+              "E"
+            ],
+            "crash_duration": 3,
+            "normal_cost": 180000,
+            "crash_cost": 260000
+          },
+          {
+            "name": "H",
+            "optimistic": 9,
+            "likely": 9,
+            "pessimistic": 9,
+            "depends_on": [
+              "G",
+              "E"
+            ],
+            "crash_duration": 6,
+            "normal_cost": 200000,
+            "crash_cost": 380000
+          },
+          {
+            "name": "J",
+            "optimistic": 8,
+            "likely": 8,
+            "pessimistic": 8,
+            "depends_on": [
+              "F",
+              "I"
+            ],
+            "crash_duration": 6,
+            "normal_cost": 430000,
+            "crash_cost": 490000
+          },
+          {
+            "name": "K",
+            "optimistic": 4,
+            "likely": 4,
+            "pessimistic": 4,
+            "depends_on": [
+              "J"
+            ],
+            "crash_duration": 3,
+            "normal_cost": 160000,
+            "crash_cost": 200000
+          },
+          {
+            "name": "L",
+            "optimistic": 5,
+            "likely": 5,
+            "pessimistic": 5,
+            "depends_on": [
+              "J"
+            ],
+            "crash_duration": 3,
+            "normal_cost": 250000,
+            "crash_cost": 350000
+          },
+          {
+            "name": "M",
+            "optimistic": 2,
+            "likely": 2,
+            "pessimistic": 2,
+            "depends_on": [
+              "H"
+            ],
+            "crash_duration": 1,
+            "normal_cost": 100000,
+            "crash_cost": 200000
+          },
+          {
+            "name": "N",
+            "optimistic": 6,
+            "likely": 6,
+            "pessimistic": 6,
+            "depends_on": [
+              "K",
+              "L"
+            ],
+            "crash_duration": 3,
+            "normal_cost": 330000,
+            "crash_cost": 510000
+          }
+        ]
+      },
+      "cpm_result": {
+        "project_duration": 44.0,
+        "critical_path": [
+          "A",
+          "B",
+          "C",
+          "E",
+          "F",
+          "J",
+          "L",
+          "N"
+        ],
+        "per_task": {
+          "A": {
+            "expected_duration": 2.0,
+            "ES": 0.0,
+            "EF": 2.0,
+            "LS": 0.0,
+            "LF": 2.0,
+            "slack": 0.0
+          },
+          "B": {
+            "expected_duration": 4.0,
+            "ES": 2.0,
+            "EF": 6.0,
+            "LS": 2.0,
+            "LF": 6.0,
+            "slack": 0.0
+          },
+          "C": {
+            "expected_duration": 10.0,
+            "ES": 6.0,
+            "EF": 16.0,
+            "LS": 6.0,
+            "LF": 16.0,
+            "slack": 0.0
+          },
+          "D": {
+            "expected_duration": 6.0,
+            "ES": 16.0,
+            "EF": 22.0,
+            "LS": 20.0,
+            "LF": 26.0,
+            "slack": 4.0
+          },
+          "E": {
+            "expected_duration": 4.0,
+            "ES": 16.0,
+            "EF": 20.0,
+            "LS": 16.0,
+            "LF": 20.0,
+            "slack": 0.0
+          },
+          "I": {
+            "expected_duration": 7.0,
+            "ES": 16.0,
+            "EF": 23.0,
+            "LS": 18.0,
+            "LF": 25.0,
+            "slack": 2.0
+          },
+          "G": {
+            "expected_duration": 7.0,
+            "ES": 22.0,
+            "EF": 29.0,
+            "LS": 26.0,
+            "LF": 33.0,
+            "slack": 4.0
+          },
+          "F": {
+            "expected_duration": 5.0,
+            "ES": 20.0,
+            "EF": 25.0,
+            "LS": 20.0,
+            "LF": 25.0,
+            "slack": 0.0
+          },
+          "H": {
+            "expected_duration": 9.0,
+            "ES": 29.0,
+            "EF": 38.0,
+            "LS": 33.0,
+            "LF": 42.0,
+            "slack": 4.0
+          },
+          "J": {
+            "expected_duration": 8.0,
+            "ES": 25.0,
+            "EF": 33.0,
+            "LS": 25.0,
+            "LF": 33.0,
+            "slack": 0.0
+          },
+          "K": {
+            "expected_duration": 4.0,
+            "ES": 33.0,
+            "EF": 37.0,
+            "LS": 34.0,
+            "LF": 38.0,
+            "slack": 1.0
+          },
+          "L": {
+            "expected_duration": 5.0,
+            "ES": 33.0,
+            "EF": 38.0,
+            "LS": 33.0,
+            "LF": 38.0,
+            "slack": 0.0
+          },
+          "M": {
+            "expected_duration": 2.0,
+            "ES": 38.0,
+            "EF": 40.0,
+            "LS": 42.0,
+            "LF": 44.0,
+            "slack": 4.0
+          },
+          "N": {
+            "expected_duration": 6.0,
+            "ES": 38.0,
+            "EF": 44.0,
+            "LS": 38.0,
+            "LF": 44.0,
+            "slack": 0.0
+          }
+        },
+        "std_dev": 0.0
+      }
+    },
+    {
+      "version_id": "v8_8fe505",
+      "timestamp": "2026-06-30T22:32:00.960432",
+      "tasks": {
+        "tasks": [
+          {
+            "name": "Task A",
+            "optimistic": 2,
+            "likely": 2,
+            "pessimistic": 2,
+            "depends_on": [],
+            "crash_duration": 1,
+            "normal_cost": 180000,
+            "crash_cost": 280000
+          },
+          {
+            "name": "Task B",
+            "optimistic": 4,
+            "likely": 4,
+            "pessimistic": 4,
+            "depends_on": [
+              "Task A"
+            ],
+            "crash_duration": 2,
+            "normal_cost": 320000,
+            "crash_cost": 420000
+          },
+          {
+            "name": "Task C",
+            "optimistic": 10,
+            "likely": 10,
+            "pessimistic": 10,
+            "depends_on": [
+              "Task B"
+            ],
+            "crash_duration": 7,
+            "normal_cost": 620000,
+            "crash_cost": 860000
+          },
+          {
+            "name": "Task D",
+            "optimistic": 6,
+            "likely": 6,
+            "pessimistic": 6,
+            "depends_on": [
+              "Task C"
+            ],
+            "crash_duration": 4,
+            "normal_cost": 260000,
+            "crash_cost": 340000
+          },
+          {
+            "name": "Task E",
+            "optimistic": 4,
+            "likely": 4,
+            "pessimistic": 4,
+            "depends_on": [
+              "Task C"
+            ],
+            "crash_duration": 3,
+            "normal_cost": 410000,
+            "crash_cost": 570000
+          },
+          {
+            "name": "Task I",
+            "optimistic": 7,
+            "likely": 7,
+            "pessimistic": 7,
+            "depends_on": [
+              "Task C"
+            ],
+            "crash_duration": 5,
+            "normal_cost": 210000,
+            "crash_cost": 270000
+          },
+          {
+            "name": "Task G",
+            "optimistic": 7,
+            "likely": 7,
+            "pessimistic": 7,
+            "depends_on": [
+              "Task D"
+            ],
+            "crash_duration": 4,
+            "normal_cost": 900000,
+            "crash_cost": 1020000
+          },
+          {
+            "name": "Task F",
+            "optimistic": 5,
+            "likely": 5,
+            "pessimistic": 5,
+            "depends_on": [
+              "Task E"
+            ],
+            "crash_duration": 3,
+            "normal_cost": 180000,
+            "crash_cost": 260000
+          },
+          {
+            "name": "Task H",
+            "optimistic": 9,
+            "likely": 9,
+            "pessimistic": 9,
+            "depends_on": [
+              "Task E",
+              "Task G"
+            ],
+            "crash_duration": 6,
+            "normal_cost": 200000,
+            "crash_cost": 380000
+          },
+          {
+            "name": "Task J",
+            "optimistic": 8,
+            "likely": 8,
+            "pessimistic": 8,
+            "depends_on": [
+              "Task F",
+              "Task I"
+            ],
+            "crash_duration": 6,
+            "normal_cost": 430000,
+            "crash_cost": 490000
+          },
+          {
+            "name": "Task M",
+            "optimistic": 2,
+            "likely": 2,
+            "pessimistic": 2,
+            "depends_on": [
+              "Task H"
+            ],
+            "crash_duration": 1,
+            "normal_cost": 100000,
+            "crash_cost": 200000
+          },
+          {
+            "name": "Task K",
+            "optimistic": 4,
+            "likely": 4,
+            "pessimistic": 4,
+            "depends_on": [
+              "Task J"
+            ],
+            "crash_duration": 3,
+            "normal_cost": 160000,
+            "crash_cost": 200000
+          },
+          {
+            "name": "Task L",
+            "optimistic": 5,
+            "likely": 5,
+            "pessimistic": 5,
+            "depends_on": [
+              "Task J"
+            ],
+            "crash_duration": 3,
+            "normal_cost": 250000,
+            "crash_cost": 350000
+          },
+          {
+            "name": "Task N",
+            "optimistic": 6,
+            "likely": 6,
+            "pessimistic": 6,
+            "depends_on": [
+              "Task K",
+              "Task L"
+            ],
+            "crash_duration": 3,
+            "normal_cost": 330000,
+            "crash_cost": 510000
+          }
+        ]
+      },
+      "cpm_result": {
+        "project_duration": 44.0,
+        "critical_path": [
+          "Task A",
+          "Task B",
+          "Task C",
+          "Task E",
+          "Task F",
+          "Task J",
+          "Task L",
+          "Task N"
+        ],
+        "per_task": {
+          "Task A": {
+            "expected_duration": 2.0,
+            "ES": 0.0,
+            "EF": 2.0,
+            "LS": 0.0,
+            "LF": 2.0,
+            "slack": 0.0
+          },
+          "Task B": {
+            "expected_duration": 4.0,
+            "ES": 2.0,
+            "EF": 6.0,
+            "LS": 2.0,
+            "LF": 6.0,
+            "slack": 0.0
+          },
+          "Task C": {
+            "expected_duration": 10.0,
+            "ES": 6.0,
+            "EF": 16.0,
+            "LS": 6.0,
+            "LF": 16.0,
+            "slack": 0.0
+          },
+          "Task D": {
+            "expected_duration": 6.0,
+            "ES": 16.0,
+            "EF": 22.0,
+            "LS": 20.0,
+            "LF": 26.0,
+            "slack": 4.0
+          },
+          "Task E": {
+            "expected_duration": 4.0,
+            "ES": 16.0,
+            "EF": 20.0,
+            "LS": 16.0,
+            "LF": 20.0,
+            "slack": 0.0
+          },
+          "Task I": {
+            "expected_duration": 7.0,
+            "ES": 16.0,
+            "EF": 23.0,
+            "LS": 18.0,
+            "LF": 25.0,
+            "slack": 2.0
+          },
+          "Task G": {
+            "expected_duration": 7.0,
+            "ES": 22.0,
+            "EF": 29.0,
+            "LS": 26.0,
+            "LF": 33.0,
+            "slack": 4.0
+          },
+          "Task F": {
+            "expected_duration": 5.0,
+            "ES": 20.0,
+            "EF": 25.0,
+            "LS": 20.0,
+            "LF": 25.0,
+            "slack": 0.0
+          },
+          "Task H": {
+            "expected_duration": 9.0,
+            "ES": 29.0,
+            "EF": 38.0,
+            "LS": 33.0,
+            "LF": 42.0,
+            "slack": 4.0
+          },
+          "Task J": {
+            "expected_duration": 8.0,
+            "ES": 25.0,
+            "EF": 33.0,
+            "LS": 25.0,
+            "LF": 33.0,
+            "slack": 0.0
+          },
+          "Task M": {
+            "expected_duration": 2.0,
+            "ES": 38.0,
+            "EF": 40.0,
+            "LS": 42.0,
+            "LF": 44.0,
+            "slack": 4.0
+          },
+          "Task K": {
+            "expected_duration": 4.0,
+            "ES": 33.0,
+            "EF": 37.0,
+            "LS": 34.0,
+            "LF": 38.0,
+            "slack": 1.0
+          },
+          "Task L": {
+            "expected_duration": 5.0,
+            "ES": 33.0,
+            "EF": 38.0,
+            "LS": 33.0,
+            "LF": 38.0,
+            "slack": 0.0
+          },
+          "Task N": {
+            "expected_duration": 6.0,
+            "ES": 38.0,
+            "EF": 44.0,
+            "LS": 38.0,
+            "LF": 44.0,
+            "slack": 0.0
+          }
+        },
+        "std_dev": 0.0
+      }
+    },
+    {
+      "version_id": "v9_2e2494",
+      "timestamp": "2026-06-30T23:42:11.407503",
+      "tasks": {
+        "tasks": [
+          {
+            "name": "Task A",
+            "optimistic": 2,
+            "likely": 2,
+            "pessimistic": 2,
+            "depends_on": [],
+            "crash_duration": 1,
+            "normal_cost": 180000,
+            "crash_cost": 280000
+          },
+          {
+            "name": "Task B",
+            "optimistic": 4,
+            "likely": 4,
+            "pessimistic": 4,
+            "depends_on": [
+              "Task A"
+            ],
+            "crash_duration": 2,
+            "normal_cost": 320000,
+            "crash_cost": 420000
+          },
+          {
+            "name": "Task C",
+            "optimistic": 10,
+            "likely": 10,
+            "pessimistic": 10,
+            "depends_on": [
+              "Task B"
+            ],
+            "crash_duration": 7,
+            "normal_cost": 620000,
+            "crash_cost": 860000
+          },
+          {
+            "name": "Task D",
+            "optimistic": 6,
+            "likely": 6,
+            "pessimistic": 6,
+            "depends_on": [
+              "Task C"
+            ],
+            "crash_duration": 4,
+            "normal_cost": 260000,
+            "crash_cost": 340000
+          },
+          {
+            "name": "Task E",
+            "optimistic": 4,
+            "likely": 4,
+            "pessimistic": 4,
+            "depends_on": [
+              "Task C"
+            ],
+            "crash_duration": 3,
+            "normal_cost": 410000,
+            "crash_cost": 570000
+          },
+          {
+            "name": "Task I",
+            "optimistic": 7,
+            "likely": 7,
+            "pessimistic": 7,
+            "depends_on": [
+              "Task C"
+            ],
+            "crash_duration": 5,
+            "normal_cost": 210000,
+            "crash_cost": 270000
+          },
+          {
+            "name": "Task G",
+            "optimistic": 7,
+            "likely": 7,
+            "pessimistic": 7,
+            "depends_on": [
+              "Task D"
+            ],
+            "crash_duration": 4,
+            "normal_cost": 900000,
+            "crash_cost": 1020000
+          },
+          {
+            "name": "Task F",
+            "optimistic": 5,
+            "likely": 5,
+            "pessimistic": 5,
+            "depends_on": [
+              "Task E"
+            ],
+            "crash_duration": 3,
+            "normal_cost": 180000,
+            "crash_cost": 260000
+          },
+          {
+            "name": "Task H",
+            "optimistic": 9,
+            "likely": 9,
+            "pessimistic": 9,
+            "depends_on": [
+              "Task E",
+              "Task G"
+            ],
+            "crash_duration": 6,
+            "normal_cost": 200000,
+            "crash_cost": 380000
+          },
+          {
+            "name": "Task J",
+            "optimistic": 8,
+            "likely": 8,
+            "pessimistic": 8,
+            "depends_on": [
+              "Task F",
+              "Task I"
+            ],
+            "crash_duration": 6,
+            "normal_cost": 430000,
+            "crash_cost": 490000
+          },
+          {
+            "name": "Task M",
+            "optimistic": 2,
+            "likely": 2,
+            "pessimistic": 2,
+            "depends_on": [
+              "Task H"
+            ],
+            "crash_duration": 1,
+            "normal_cost": 100000,
+            "crash_cost": 200000
+          },
+          {
+            "name": "Task K",
+            "optimistic": 4,
+            "likely": 4,
+            "pessimistic": 4,
+            "depends_on": [
+              "Task J"
+            ],
+            "crash_duration": 3,
+            "normal_cost": 160000,
+            "crash_cost": 200000
+          },
+          {
+            "name": "Task L",
+            "optimistic": 5,
+            "likely": 5,
+            "pessimistic": 5,
+            "depends_on": [
+              "Task J"
+            ],
+            "crash_duration": 3,
+            "normal_cost": 250000,
+            "crash_cost": 350000
+          },
+          {
+            "name": "Task N",
+            "optimistic": 6,
+            "likely": 6,
+            "pessimistic": 6,
+            "depends_on": [
+              "Task K",
+              "Task L"
+            ],
+            "crash_duration": 3,
+            "normal_cost": 330000,
+            "crash_cost": 510000
+          }
+        ]
+      },
+      "cpm_result": {
+        "project_duration": 44.0,
+        "critical_path": [
+          "Task A",
+          "Task B",
+          "Task C",
+          "Task E",
+          "Task F",
+          "Task J",
+          "Task L",
+          "Task N"
+        ],
+        "per_task": {
+          "Task A": {
+            "expected_duration": 2.0,
+            "ES": 0.0,
+            "EF": 2.0,
+            "LS": 0.0,
+            "LF": 2.0,
+            "slack": 0.0
+          },
+          "Task B": {
+            "expected_duration": 4.0,
+            "ES": 2.0,
+            "EF": 6.0,
+            "LS": 2.0,
+            "LF": 6.0,
+            "slack": 0.0
+          },
+          "Task C": {
+            "expected_duration": 10.0,
+            "ES": 6.0,
+            "EF": 16.0,
+            "LS": 6.0,
+            "LF": 16.0,
+            "slack": 0.0
+          },
+          "Task D": {
+            "expected_duration": 6.0,
+            "ES": 16.0,
+            "EF": 22.0,
+            "LS": 20.0,
+            "LF": 26.0,
+            "slack": 4.0
+          },
+          "Task E": {
+            "expected_duration": 4.0,
+            "ES": 16.0,
+            "EF": 20.0,
+            "LS": 16.0,
+            "LF": 20.0,
+            "slack": 0.0
+          },
+          "Task I": {
+            "expected_duration": 7.0,
+            "ES": 16.0,
+            "EF": 23.0,
+            "LS": 18.0,
+            "LF": 25.0,
+            "slack": 2.0
+          },
+          "Task G": {
+            "expected_duration": 7.0,
+            "ES": 22.0,
+            "EF": 29.0,
+            "LS": 26.0,
+            "LF": 33.0,
+            "slack": 4.0
+          },
+          "Task F": {
+            "expected_duration": 5.0,
+            "ES": 20.0,
+            "EF": 25.0,
+            "LS": 20.0,
+            "LF": 25.0,
+            "slack": 0.0
+          },
+          "Task H": {
+            "expected_duration": 9.0,
+            "ES": 29.0,
+            "EF": 38.0,
+            "LS": 33.0,
+            "LF": 42.0,
+            "slack": 4.0
+          },
+          "Task J": {
+            "expected_duration": 8.0,
+            "ES": 25.0,
+            "EF": 33.0,
+            "LS": 25.0,
+            "LF": 33.0,
+            "slack": 0.0
+          },
+          "Task M": {
+            "expected_duration": 2.0,
+            "ES": 38.0,
+            "EF": 40.0,
+            "LS": 42.0,
+            "LF": 44.0,
+            "slack": 4.0
+          },
+          "Task K": {
+            "expected_duration": 4.0,
+            "ES": 33.0,
+            "EF": 37.0,
+            "LS": 34.0,
+            "LF": 38.0,
+            "slack": 1.0
+          },
+          "Task L": {
+            "expected_duration": 5.0,
+            "ES": 33.0,
+            "EF": 38.0,
+            "LS": 33.0,
+            "LF": 38.0,
+            "slack": 0.0
+          },
+          "Task N": {
+            "expected_duration": 6.0,
+            "ES": 38.0,
+            "EF": 44.0,
+            "LS": 38.0,
+            "LF": 44.0,
+            "slack": 0.0
+          }
+        },
+        "std_dev": 0.0
+      }
     }
   ]
 }
