@@ -6,6 +6,7 @@ import nest_asyncio  # type: ignore
 import pandas as pd
 import streamlit as st  # type: ignore
 import plotly.express as px  # type: ignore
+import plotly.graph_objects as go  # type: ignore
 from datetime import datetime, timedelta
 from dotenv import load_dotenv  # type: ignore
 from google import genai  # type: ignore
@@ -22,6 +23,498 @@ from mcp.client.session import ClientSession  # type: ignore
 # Apply nest_asyncio to allow asyncio.run() within Streamlit's event loop
 nest_asyncio.apply()
 load_dotenv(override=True)
+
+def render_aon_diagram(tasks_list, cpm_result):
+    """
+    Renders the project network in Activity-on-Node (AON) notation using Plotly.
+    Nodes represent tasks, and directed edges represent dependencies.
+    """
+    if not tasks_list or not cpm_result:
+        return go.Figure()
+        
+    # 1. Build dictionary of tasks
+    tasks_dict = {t["name"]: t for t in tasks_list}
+    
+    # 2. Get CPM details
+    per_task = cpm_result.get("per_task", {})
+    critical_path = set(cpm_result.get("critical_path", []))
+    
+    # 3. Calculate layers (left-to-right topological order layout)
+    layers = {}
+    visiting = set()
+    def get_layer(name):
+        if name in layers:
+            return layers[name]
+        if name in visiting:
+            return 0
+        visiting.add(name)
+        t_info = tasks_dict.get(name, {})
+        deps = t_info.get("depends_on", [])
+        if not deps:
+            layers[name] = 0
+        else:
+            layers[name] = max((get_layer(d) for d in deps if d in tasks_dict), default=0) + 1
+        visiting.remove(name)
+        return layers[name]
+        
+    for name in tasks_dict:
+        get_layer(name)
+        
+    # Group nodes by layer
+    layer_groups = {}
+    for name, l in layers.items():
+        layer_groups.setdefault(l, []).append(name)
+        
+    for l in layer_groups:
+        layer_groups[l].sort()
+        
+    # Calculate vertical spacing and coordinates
+    node_coords = {}
+    spacing_x = 2.0
+    spacing_y = 1.5
+    for l, names in layer_groups.items():
+        k = len(names)
+        for i, name in enumerate(names):
+            x = l * spacing_x
+            y = (i - (k - 1) / 2.0) * spacing_y
+            node_coords[name] = (x, y)
+            
+    fig = go.Figure()
+    
+    # 4. Draw dependency edges
+    for name, t_info in tasks_dict.items():
+        x_target, y_target = node_coords[name]
+        deps = t_info.get("depends_on", [])
+        for dep in deps:
+            if dep not in node_coords:
+                continue
+            x_source, y_source = node_coords[dep]
+            
+            # Highlight critical path edges in red
+            is_crit = (name in critical_path and dep in critical_path)
+            color = "red" if is_crit else "#4682B4"
+            width = 2.5 if is_crit else 1.5
+            
+            # Offset calculation to start/end arrows at node boundaries
+            dx = x_target - x_source
+            dy = y_target - y_source
+            dist = (dx**2 + dy**2)**0.5
+            if dist > 0:
+                ux = dx / dist
+                uy = dy / dist
+                x_start = x_source + 0.28 * ux
+                y_start = y_source + 0.28 * uy
+                x_end = x_target - 0.28 * ux
+                y_end = y_target - 0.28 * uy
+            else:
+                x_start, y_start = x_source, y_source
+                x_end, y_end = x_target, y_target
+                
+            fig.add_annotation(
+                x=x_end, y=y_end,
+                ax=x_start, ay=y_start,
+                xref="x", yref="y",
+                axref="x", ayref="y",
+                showarrow=True,
+                arrowhead=2,
+                arrowsize=1.2,
+                arrowwidth=width,
+                arrowcolor=color,
+                opacity=0.8
+            )
+            
+    # 5. Draw task nodes
+    node_x = []
+    node_y = []
+    node_text = []
+    node_color = []
+    node_hover = []
+    
+    for name, coords in node_coords.items():
+        x, y = coords
+        node_x.append(x)
+        node_y.append(y)
+        
+        t_cpm = per_task.get(name, {})
+        dur = t_cpm.get("expected_duration", tasks_dict.get(name, {}).get("likely", 0.0))
+        es = t_cpm.get("ES", 0.0)
+        ef = t_cpm.get("EF", 0.0)
+        ls = t_cpm.get("LS", 0.0)
+        lf = t_cpm.get("LF", 0.0)
+        slack = t_cpm.get("slack", 0.0)
+        
+        # Label task name and expected duration inside the node
+        node_text.append(f"<b>{name}</b><br>{dur:.1f}d")
+        
+        is_crit = name in critical_path
+        node_color.append("red" if is_crit else "#1f77b4")
+        
+        hover = (
+            f"<b>Task:</b> {name}<br>"
+            f"<b>Expected Duration:</b> {dur:.2f} days<br>"
+            f"<b>ES:</b> {es:.2f} | <b>EF:</b> {ef:.2f}<br>"
+            f"<b>LS:</b> {ls:.2f} | <b>LF:</b> {lf:.2f}<br>"
+            f"<b>Slack:</b> {slack:.2f} days<br>"
+            f"<b>Status:</b> {'Critical' if is_crit else 'Non-Critical'}"
+        )
+        node_hover.append(hover)
+        
+    fig.add_trace(go.Scatter(
+        x=node_x,
+        y=node_y,
+        mode="markers+text",
+        marker=dict(
+            size=48,
+            color=node_color,
+            line=dict(width=2, color="white")
+        ),
+        text=node_text,
+        textposition="middle center",
+        textfont=dict(color="white", size=10, weight="bold"),
+        hovertext=node_hover,
+        hoverinfo="text",
+        showlegend=False
+    ))
+    
+    fig.update_layout(
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        margin=dict(l=40, r=40, t=40, b=40),
+        hovermode="closest",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        height=450,
+        title="Activity-on-Node (AON) Network Diagram"
+    )
+    
+    return fig
+
+def render_aoa_diagram(tasks_list, cpm_result):
+    """
+    Renders the project network in Activity-on-Arrow (AOA) notation using Plotly.
+    Event nodes represent project milestones, and directed edges represent tasks.
+    """
+    if not tasks_list or not cpm_result:
+        return go.Figure()
+        
+    per_task = cpm_result.get("per_task", {})
+    critical_path = set(cpm_result.get("critical_path", []))
+    
+    # 1. Determine terminal tasks
+    all_deps = set()
+    for t in tasks_list:
+        for d in t.get("depends_on", []):
+            all_deps.add(d)
+    is_terminal = lambda name: name not in all_deps
+    
+    # 2. Extract unique dependency sets
+    dep_sets = set()
+    for t in tasks_list:
+        deps = t.get("depends_on", [])
+        if deps:
+            dep_sets.add(tuple(sorted(deps)))
+            
+    # 3. Define event nodes
+    event_nodes = set(["Start"])
+    if any(is_terminal(t["name"]) for t in tasks_list):
+        event_nodes.add("End")
+    for t in tasks_list:
+        if not is_terminal(t["name"]):
+            event_nodes.add(f"event_comp_{t['name']}")
+    for d in dep_sets:
+        if len(d) >= 2:
+            event_nodes.add(f"event_dep_{'_'.join(d)}")
+            
+    # 4. Build incoming adjacency list for event nodes topological sorting
+    adj_in = {node: set() for node in event_nodes}
+    
+    # Connect for real tasks
+    for t in tasks_list:
+        name = t["name"]
+        if not t.get("depends_on"):
+            start_ev = "Start"
+        elif len(t["depends_on"]) == 1:
+            start_ev = f"event_comp_{t['depends_on'][0]}"
+        else:
+            start_ev = f"event_dep_{'_'.join(sorted(t['depends_on']))}"
+            
+        if is_terminal(name):
+            end_ev = "End"
+        else:
+            end_ev = f"event_comp_{name}"
+            
+        adj_in[end_ev].add(start_ev)
+        
+    # Connect for dummy tasks
+    for d in dep_sets:
+        if len(d) >= 2:
+            dep_node = f"event_dep_{'_'.join(d)}"
+            for dep in d:
+                comp_node = f"event_comp_{dep}"
+                adj_in[dep_node].add(comp_node)
+                
+    # 5. Compute topological layers
+    event_layers = {}
+    visiting = set()
+    def get_event_layer(node):
+        if node in event_layers:
+            return event_layers[node]
+        if node in visiting:
+            return 0
+        visiting.add(node)
+        incoming = adj_in.get(node, set())
+        if not incoming:
+            event_layers[node] = 0
+        else:
+            event_layers[node] = max(get_event_layer(parent) for parent in incoming) + 1
+        visiting.remove(node)
+        return event_layers[node]
+        
+    for node in event_nodes:
+        get_event_layer(node)
+        
+    # Group event nodes by layer
+    layer_groups = {}
+    for node, l in event_layers.items():
+        layer_groups.setdefault(l, []).append(node)
+        
+    for l in layer_groups:
+        layer_groups[l].sort(key=lambda x: (x == "Start", x == "End", x))
+        
+    # Calculate event coordinates
+    node_coords = {}
+    spacing_x = 2.5
+    spacing_y = 1.5
+    for l, nodes in layer_groups.items():
+        k = len(nodes)
+        for i, node in enumerate(nodes):
+            x = l * spacing_x
+            y = (i - (k - 1) / 2.0) * spacing_y
+            node_coords[node] = (x, y)
+            
+    # Assign event numbers
+    sorted_nodes = sorted(event_nodes, key=lambda n: (event_layers[n], node_coords[n][1], n))
+    node_numbers = {}
+    current_num = 1
+    for n in sorted_nodes:
+        if n == "Start":
+            node_numbers[n] = 1
+        elif n == "End":
+            continue
+        else:
+            current_num += 1
+            node_numbers[n] = current_num
+    if "End" in event_nodes:
+        node_numbers["End"] = current_num + 1
+        
+    fig = go.Figure()
+    
+    # 6. Draw tasks as arrows and dummy activities
+    midpoint_x = []
+    midpoint_y = []
+    midpoint_text = []
+    midpoint_hover = []
+    midpoint_marker_color = []
+    midpoint_text_color = []
+    
+    # Draw real tasks
+    for t in tasks_list:
+        name = t["name"]
+        
+        # Start event
+        if not t.get("depends_on"):
+            start_ev = "Start"
+        elif len(t["depends_on"]) == 1:
+            start_ev = f"event_comp_{t['depends_on'][0]}"
+        else:
+            start_ev = f"event_dep_{'_'.join(sorted(t['depends_on']))}"
+            
+        # End event
+        if is_terminal(name):
+            end_ev = "End"
+        else:
+            end_ev = f"event_comp_{name}"
+            
+        x_source, y_source = node_coords[start_ev]
+        x_target, y_target = node_coords[end_ev]
+        
+        is_crit = name in critical_path
+        color = "red" if is_crit else "#4682B4"
+        width = 2.5 if is_crit else 1.5
+        
+        # Offset to start/end arrows outside the event node circles
+        dx = x_target - x_source
+        dy = y_target - y_source
+        dist = (dx**2 + dy**2)**0.5
+        if dist > 0:
+            ux = dx / dist
+            uy = dy / dist
+            x_start = x_source + 0.22 * ux
+            y_start = y_source + 0.22 * uy
+            x_end = x_target - 0.22 * ux
+            y_end = y_target - 0.22 * uy
+        else:
+            x_start, y_start = x_source, y_source
+            x_end, y_end = x_target, y_target
+            
+        fig.add_annotation(
+            x=x_end, y=y_end,
+            ax=x_start, ay=y_start,
+            xref="x", yref="y",
+            axref="x", ayref="y",
+            showarrow=True,
+            arrowhead=2,
+            arrowsize=1.2,
+            arrowwidth=width,
+            arrowcolor=color,
+            opacity=0.8
+        )
+        
+        # Edge Midpoint for Label & Hover Info
+        mx = (x_source + x_target) / 2.0
+        my = (y_source + y_target) / 2.0
+        
+        t_cpm = per_task.get(name, {})
+        dur = t_cpm.get("expected_duration", t.get("likely", 0.0))
+        es = t_cpm.get("ES", 0.0)
+        ef = t_cpm.get("EF", 0.0)
+        ls = t_cpm.get("LS", 0.0)
+        lf = t_cpm.get("LF", 0.0)
+        slack = t_cpm.get("slack", 0.0)
+        
+        midpoint_x.append(mx)
+        midpoint_y.append(my)
+        midpoint_text.append(f"{name} ({dur:.1f}d)")
+        midpoint_marker_color.append("red" if is_crit else "#4682B4")
+        midpoint_text_color.append("red" if is_crit else "#4682B4")
+        
+        hover = (
+            f"<b>Task:</b> {name}<br>"
+            f"<b>Expected Duration:</b> {dur:.2f} days<br>"
+            f"<b>ES:</b> {es:.2f} | <b>EF:</b> {ef:.2f}<br>"
+            f"<b>LS:</b> {ls:.2f} | <b>LF:</b> {lf:.2f}<br>"
+            f"<b>Slack:</b> {slack:.2f} days<br>"
+            f"<b>Status:</b> {'Critical' if is_crit else 'Non-Critical'}"
+        )
+        midpoint_hover.append(hover)
+        
+    # Draw dummy tasks
+    for d in dep_sets:
+        if len(d) >= 2:
+            dep_node = f"event_dep_{'_'.join(d)}"
+            for dep in d:
+                comp_node = f"event_comp_{dep}"
+                
+                x_source, y_source = node_coords[comp_node]
+                x_target, y_target = node_coords[dep_node]
+                
+                dx = x_target - x_source
+                dy = y_target - y_source
+                dist = (dx**2 + dy**2)**0.5
+                if dist > 0:
+                    ux = dx / dist
+                    uy = dy / dist
+                    x_start = x_source + 0.22 * ux
+                    y_start = y_source + 0.22 * uy
+                    x_end = x_target - 0.22 * ux
+                    y_end = y_target - 0.22 * uy
+                else:
+                    x_start, y_start = x_source, y_source
+                    x_end, y_end = x_target, y_target
+                    
+                # 1. Draw dashed line for the dummy connection
+                fig.add_trace(go.Scatter(
+                    x=[x_start, x_end],
+                    y=[y_start, y_end],
+                    mode="lines",
+                    line=dict(color="#888888", width=1.5, dash="dash"),
+                    showlegend=False,
+                    hoverinfo="skip"
+                ))
+                
+                # 2. Draw a tiny arrow head at the end
+                fig.add_annotation(
+                    x=x_end, y=y_end,
+                    ax=x_end - 0.05 * ux, ay=y_end - 0.05 * uy,
+                    xref="x", yref="y",
+                    axref="x", ayref="y",
+                    showarrow=True,
+                    arrowhead=1,
+                    arrowsize=1.0,
+                    arrowwidth=1.5,
+                    arrowcolor="#888888"
+                )
+                
+                # Midpoint for dummy text/hover
+                mx = (x_source + x_target) / 2.0
+                my = (y_source + y_target) / 2.0
+                midpoint_x.append(mx)
+                midpoint_y.append(my)
+                midpoint_text.append("")  # dummy labels are typically blank
+                midpoint_marker_color.append("#888888")
+                midpoint_text_color.append("#888888")
+                midpoint_hover.append("<b>Dummy Connection</b><br>Duration: 0d")
+                
+    # Draw midpoints trace for hover tooltips and labels
+    fig.add_trace(go.Scatter(
+        x=midpoint_x,
+        y=midpoint_y,
+        mode="markers+text",
+        marker=dict(size=4, color=midpoint_marker_color, opacity=0),
+        text=midpoint_text,
+        textposition="top center",
+        textfont=dict(color=midpoint_text_color, size=9, weight="bold"),
+        hovertext=midpoint_hover,
+        hoverinfo="text",
+        showlegend=False
+    ))
+    
+    # 7. Draw event nodes (numbered circles)
+    node_x = []
+    node_y = []
+    node_text = []
+    node_hover = []
+    
+    for name, coords in node_coords.items():
+        x, y = coords
+        node_x.append(x)
+        node_y.append(y)
+        
+        num = node_numbers.get(name, "?")
+        node_text.append(str(num))
+        
+        label_map = {"Start": "Project Start", "End": "Project End"}
+        node_hover.append(f"<b>Event {num}</b><br>{label_map.get(name, name)}")
+        
+    fig.add_trace(go.Scatter(
+        x=node_x,
+        y=node_y,
+        mode="markers+text",
+        marker=dict(
+            size=35,
+            color="#EAEAEA",
+            line=dict(width=2, color="#777777")
+        ),
+        text=node_text,
+        textposition="middle center",
+        textfont=dict(color="black", size=10, weight="bold"),
+        hovertext=node_hover,
+        hoverinfo="text",
+        showlegend=False
+    ))
+    
+    fig.update_layout(
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+        margin=dict(l=40, r=40, t=40, b=40),
+        hovermode="closest",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        height=450,
+        title="Activity-on-Arrow (AOA) Network Diagram"
+    )
+    
+    return fig
 
 st.set_page_config(page_title="PERT Scheduler Agent", layout="wide")
 
@@ -167,6 +660,29 @@ if st.session_state.cpm_result:
         if tasks_df:
             df = pd.DataFrame(tasks_df)
             st.dataframe(df, use_container_width=True, hide_index=True)
+
+    # Network Diagram Section
+    st.divider()
+    st.subheader("🕸️ Network Diagram")
+    
+    # Auto-detect default notation from parser results
+    default_idx = 1 if st.session_state.parsed_tasks.get("detected_type") == "AOA" else 0
+    notation = st.radio(
+        "Select Notation:",
+        ["AON (Activity-on-Node)", "AOA (Activity-on-Arrow)"],
+        index=default_idx,
+        horizontal=True,
+        key="diagram_notation_selector"
+    )
+    
+    tasks_list = st.session_state.parsed_tasks.get("tasks", [])
+    
+    if notation == "AON (Activity-on-Node)":
+        net_fig = render_aon_diagram(tasks_list, cpm)
+    else:
+        net_fig = render_aoa_diagram(tasks_list, cpm)
+        
+    st.plotly_chart(net_fig, use_container_width=True)
 
     # 6. WHAT IF CHAT
     st.divider()
